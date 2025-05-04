@@ -22,9 +22,8 @@ jobs:
       - id: set-matrix
         name: Fetch Build Matrix
         run: |
-          # Fetch and convert YAML configuration to JSON matrix
           matrix=$(yaml2json build.yaml | jq -c .)
-          echo "matrix=${matrix}" >> "$GITHUB_ENV"  # Save the matrix output into GITHUB_ENV
+          echo "matrix=${matrix}" >> $GITHUB_ENV   # Lưu matrix vào GITHUB_ENV
 
   build:
     runs-on: ubuntu-latest
@@ -34,12 +33,11 @@ jobs:
     name: Build
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}  # Lấy giá trị matrix từ job 'matrix'
     steps:
       - name: Prepare variables
         id: variables
         run: |
-          # Prepare environment variables for the build
           if [ -n "${{ matrix.shield }}" ]; then
             EXTRA_CMAKE_ARGS="-DSHIELD=${{ matrix.shield }}"
             ARTIFACT_NAME="${{ matrix.shield }}-${{ matrix.board }}-zmk"
