@@ -34,7 +34,7 @@ jobs:
     name: Build
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}  # Lấy giá trị matrix từ job 'matrix'
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
       - name: Prepare variables
         id: variables
