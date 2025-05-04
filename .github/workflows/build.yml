@@ -23,7 +23,8 @@ jobs:
         name: Fetch Build Matrix
         run: |
           matrix=$(yaml2json build.yaml | jq -c .)
-          echo "matrix=${matrix}" >> $GITHUB_ENV   # Lưu matrix vào GITHUB_ENV
+          echo "Matrix is: ${matrix}"  # Kiểm tra giá trị của matrix trước khi xuất ra
+          echo "matrix=${matrix}" >> $GITHUB_ENV  # Lưu matrix vào GITHUB_ENV
 
   build:
     runs-on: ubuntu-latest
