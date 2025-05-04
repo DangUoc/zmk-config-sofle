@@ -1,3 +1,27 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+name: Build
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    name: Fetch Build Keyboards
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install yaml2json
+        run: python3 -m pip install remarshal
+      - id: set-matrix
+        name: Fetch Build Matrix
+        run: |
+          matrix=$(yaml2json build.yaml | jq -c .)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
   build:
     runs-on: ubuntu-latest
     container:
@@ -8,17 +32,6 @@
       fail-fast: false
       matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
-      - name: Install Python 3.11 & fix west (optional)
-        run: |
-          apt update && apt install -y software-properties-common
-          add-apt-repository -y ppa:deadsnakes/ppa
-          apt update && apt install -y python3.11 python3.11-venv python3.11-distutils
-          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-          python3 --version
-          python3 -m ensurepip --upgrade
-          pip3 install --upgrade pip
-          pip3 install --upgrade west
-
       - name: Prepare variables
         id: variables
         run: |
@@ -79,7 +92,7 @@
 
       - name: Rename artifacts
         run: |
-          mkdir build/artifacts
+          mkdir -p build/artifacts
           if [ -f build/zephyr/zmk.uf2 ]; then
             cp build/zephyr/zmk.uf2 "build/artifacts/${{ steps.variables.outputs.artifact-name }}.uf2"
           elif [ -f build/zephyr/zmk.hex ]; then
@@ -91,3 +104,4 @@
         with:
           name: firmware
           path: build/artifacts
+
