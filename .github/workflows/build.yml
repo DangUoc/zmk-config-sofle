@@ -34,7 +34,7 @@ jobs:
     name: Build
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
+      matrix: ${{ fromJson(env.matrix) }}  # Lấy giá trị matrix từ GITHUB_ENV
     steps:
       - name: Prepare variables
         id: variables
