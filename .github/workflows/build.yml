@@ -12,12 +12,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Install dependencies (yaml2json, distutils, remarshal)
+      - name: Install dependencies (yaml2json, python3-dev, remarshal)
         run: |
-          # Install remarshal and distutils dependencies
+          # Cài đặt remarshal và python3-dev (thay vì python3-distutils)
           python3 -m pip install remarshal
           sudo apt-get update
-          sudo apt-get install -y python3-distutils
+          sudo apt-get install -y python3-dev # Cài đặt python3-dev thay cho python3-distutils
           
       - id: set-matrix
         name: Fetch Build Matrix
