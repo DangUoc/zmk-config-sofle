@@ -11,16 +11,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install yaml2json and distutils
+        
+      - name: Install dependencies (yaml2json, distutils, remarshal)
         run: |
+          # Install remarshal and distutils dependencies
           python3 -m pip install remarshal
           sudo apt-get update
           sudo apt-get install -y python3-distutils
+          
       - id: set-matrix
         name: Fetch Build Matrix
         run: |
+          # Fetch and convert YAML configuration to JSON matrix
           matrix=$(yaml2json build.yaml | jq -c .)
-          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "matrix=${matrix}" >> "$GITHUB_ENV"  # Save the matrix output into GITHUB_ENV
 
   build:
     runs-on: ubuntu-latest
@@ -35,18 +39,19 @@ jobs:
       - name: Prepare variables
         id: variables
         run: |
+          # Prepare environment variables for the build
           if [ -n "${{ matrix.shield }}" ]; then
             EXTRA_CMAKE_ARGS="-DSHIELD=${{ matrix.shield }}"
             ARTIFACT_NAME="${{ matrix.shield }}-${{ matrix.board }}-zmk"
             DISPLAY_NAME="${{ matrix.shield }} - ${{ matrix.board }}"
           else
-            EXTRA_CMAKE_ARGS=
+            EXTRA_CMAKE_ARGS=""
             DISPLAY_NAME="${{ matrix.board }}"
             ARTIFACT_NAME="${{ matrix.board }}-zmk"
           fi
-          echo "extra-cmake-args=${EXTRA_CMAKE_ARGS}" >> "$GITHUB_OUTPUT"
-          echo "artifact-name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
-          echo "display-name=${DISPLAY_NAME}" >> "$GITHUB_OUTPUT"
+          echo "extra-cmake-args=${EXTRA_CMAKE_ARGS}" >> "$GITHUB_ENV"
+          echo "artifact-name=${ARTIFACT_NAME}" >> "$GITHUB_ENV"
+          echo "display-name=${DISPLAY_NAME}" >> "$GITHUB_ENV"
 
       - name: Checkout
         uses: actions/checkout@v4
