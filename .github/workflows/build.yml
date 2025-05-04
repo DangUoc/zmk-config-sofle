@@ -11,15 +11,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install yaml2json
         run: python3 -m pip install remarshal
-
       - id: set-matrix
         name: Fetch Build Matrix
         run: |
           matrix=$(yaml2json build.yaml | jq -c .)
-          echo "::set-output name=matrix::${matrix}"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
@@ -29,7 +27,7 @@ jobs:
     name: Build
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
       - name: Prepare variables
         id: variables
@@ -43,9 +41,9 @@ jobs:
             DISPLAY_NAME="${{ matrix.board }}"
             ARTIFACT_NAME="${{ matrix.board }}-zmk"
           fi
-          echo "::set-output name=extra-cmake-args::${EXTRA_CMAKE_ARGS}"
-          echo "::set-output name=artifact-name::${ARTIFACT_NAME}"
-          echo "::set-output name=display-name::${DISPLAY_NAME}"
+          echo "extra-cmake-args=${EXTRA_CMAKE_ARGS}" >> "$GITHUB_OUTPUT"
+          echo "artifact-name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
+          echo "display-name=${DISPLAY_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,11 +74,6 @@ jobs:
       - name: West Zephyr export
         run: west zephyr-export
 
-      - name: Install Python distutils
-        run: |
-          apt-get update && apt-get install -y python3-distutils
-        shell: bash
-
       - name: West Build (${{ steps.variables.outputs.display-name }})
         run: |
           west build -s zmk/app -b ${{ matrix.board }} -- -DZMK_CONFIG=${GITHUB_WORKSPACE}/config ${{ steps.variables.outputs.extra-cmake-args }} ${{ matrix.cmake-args }}
@@ -96,7 +89,7 @@ jobs:
 
       - name: Rename artifacts
         run: |
-          mkdir build/artifacts
+          mkdir -p build/artifacts
           if [ -f build/zephyr/zmk.uf2 ]; then
             cp build/zephyr/zmk.uf2 "build/artifacts/${{ steps.variables.outputs.artifact-name }}.uf2"
           elif [ -f build/zephyr/zmk.hex ]; then
