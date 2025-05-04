@@ -32,6 +32,12 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
+      - name: Prepare environment
+        run: |
+          # Cài đặt python3-distutils để tránh lỗi missing module 'distutils'
+          sudo apt-get update
+          sudo apt-get install -y python3-distutils
+
       - name: Prepare variables
         id: variables
         run: |
@@ -104,4 +110,3 @@ jobs:
         with:
           name: firmware
           path: build/artifacts
-
