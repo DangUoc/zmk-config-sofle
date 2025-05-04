@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Fetch Build Keyboards
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}  # Đảm bảo xuất matrix ra output
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,17 +24,17 @@ jobs:
         run: |
           matrix=$(yaml2json build.yaml | jq -c .)
           echo "Matrix is: ${matrix}"  # Kiểm tra giá trị của matrix trước khi xuất ra
-          echo "matrix=${matrix}" >> $GITHUB_ENV  # Lưu matrix vào GITHUB_ENV
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT  # Lưu matrix vào GITHUB_OUTPUT thay vì GITHUB_ENV
 
   build:
     runs-on: ubuntu-latest
     container:
       image: zmkfirmware/zmk-build-arm:3.5-branch
-    needs: matrix
+    needs: matrix  # Đảm bảo rằng job này phụ thuộc vào job matrix
     name: Build
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(env.matrix) }}  # Lấy giá trị matrix từ GITHUB_ENV
+      matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}  # Truy xuất từ outputs của job matrix
     steps:
       - name: Prepare variables
         id: variables
